@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader';
+import $ from 'jquery';
 
 // CAMERA
 const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 1500);
@@ -70,7 +71,7 @@ function createFloor() {
 }
 
 function createRoomFloor(xAxis, yAxis, zAxis, depth){
-  let scale = { x: 10, y: 1, z: 10 }
+  let scale = { x: 10, y: 1, z: 20 }
   let pos = { x: 15, y: scale.y / 2, z: 15 }
   let box = new THREE.Mesh(new THREE.BoxBufferGeometry(), 
       new THREE.MeshPhongMaterial({ color: 0xDC143C }));
@@ -80,17 +81,26 @@ function createRoomFloor(xAxis, yAxis, zAxis, depth){
       box.receiveShadow = true;
       box.userData.draggable = true
       box.userData.name = 'BOX'
+
+
+      let box3 = new THREE.Mesh(new THREE.BoxBufferGeometry(), 
+      new THREE.MeshPhongMaterial({ color: 0xDC143C }));
+      box3.position.set(pos.x /1000, pos.y+5, pos.z/10000+0.47);
+      box3.scale.set(1, 10, 0.05);
+
+      box.add(box3)
       scene.add(box)
 
-      let box2 = new THREE.Mesh(new THREE.BoxBufferGeometry(), 
-      new THREE.MeshPhongMaterial({ color: 0xDC143C }));
-      box2.position.set(pos.x +10, pos.y+10, pos.z+10);
-      box2.scale.set(10, 10, 10);
-      box2.castShadow = true;
-      box2.receiveShadow = true;
-      box2.userData.draggable = true
-      box2.userData.name = 'BOX'
-      scene.add(box2)
+      
+      // let box2 = new THREE.Mesh(new THREE.BoxBufferGeometry(), 
+      // new THREE.MeshPhongMaterial({ color: 0xDC143C }));
+      // box2.position.set(pos.x +10, pos.y+5, pos.z+10);
+      // box2.scale.set(10, 10, 10);
+      // box2.castShadow = true;
+      // box2.receiveShadow = true;
+      // box2.userData.draggable = true
+      // box2.userData.name = 'BOX'
+      // scene.add(box2)
       // box.add(box2)
 
 
@@ -212,29 +222,25 @@ function createCastle () {
 function createHighLightOnFloor(){
   console.log(draggable)
   if(draggable != null){
-    let scale = { x: draggable.scale.x, y: draggable.scale.y, z: draggable.scale.z }
-    let pos = { x: draggable.position.x, y: 0.5, z:  draggable.position.z }
     let box = new THREE.Mesh(new THREE.BoxBufferGeometry(), 
         new THREE.MeshPhongMaterial({ color: 0xDC143C }));
-        box.position.set(pos.x, pos.y, pos.z);
-        box.scale.set(scale.x, scale.y, scale.z);
-        box.castShadow = true;
-        box.receiveShadow = true;
+        box.position.set(draggable.position.x, 1, draggable.position.z);
+        box.scale.set(draggable.scale.x, draggable.scale.y, draggable.scale.z);
         box.userData.draggable = true
         box.userData.name = 'BOX2'
         scene.add(box)
 
-        //create a blue LineBasicMaterial
-        const material = new THREE.LineBasicMaterial( { color: 0x0000ff } )
-        const points = [];
-        points.push( new THREE.Vector3( draggable.position.x + draggable.scale.x/2, 0, draggable.position.z + draggable.scale.z/2 ) );
-        points.push( new THREE.Vector3( 0, 0, draggable.position.z + draggable.scale.z/2 ) );
-        // points.push( new THREE.Vector3( 10, 0, 10) );
+        // //create a blue LineBasicMaterial
+        // const material = new THREE.LineBasicMaterial( { color: 0x0000ff } )
+        // const points = [];
+        // points.push( new THREE.Vector3( draggable.position.x , 1, draggable.position.z ) );
+        // points.push( new THREE.Vector3( 0, 1, draggable.position.z );
+        // // points.push( new THREE.Vector3( 10, 0, 10) );
 
-        const geometry = new THREE.BufferGeometry().setFromPoints( points );
-        const line = new THREE.Line( geometry, material );
-        draggable.add( line );
-
+        // const geometry = new THREE.BufferGeometry().setFromPoints( points );
+        // const line = new THREE.Line( geometry, material );
+        // line.userData.name = 'hightLight'
+        // draggable.add(line);
   }
 }
 
@@ -253,6 +259,7 @@ window.addEventListener('click', event => {
     console.log(`dropping draggable ${draggable.userData.name}`)
     draggable.position.y = 0.5;
     draggable = null as any
+    showRotateButton(false);
     return;
   }
 
@@ -268,6 +275,7 @@ window.addEventListener('click', event => {
       draggable.position.y = 10;
       console.log(draggable);
       createHighLightOnFloor();
+      showRotateButton(true);
     }
   }
 })
@@ -292,6 +300,31 @@ function dragObject() {
     }
   }
 }
+
+  $(document).keydown(function(e){
+    if (draggable != null) {
+      if (e.which == 81) { 
+        draggable.rotation.y += 0.05;                      // Rotates   1 radian  per frame
+        // draggable.rotation.y += Math.PI / 180;          // Rotates   1 degree  per frame
+        draggable.rotation.y += 90 * Math.PI / 180;  
+      }else if(e.which == 69){
+        draggable.rotation.y -= 0.05;                       // Rotates   1 radian  per frame
+        // draggable.rotation.y -= Math.PI / 180;          // Rotates   1 degree  per frame
+        draggable.rotation.y -= 90 * Math.PI / 180;     // Rotates  45 degrees per frame
+      }
+    }
+  });
+
+function showRotateButton(isShow){
+  if(isShow == true){
+    $('#rotate-left').show();
+    $('#rotate-right').show();
+  }else{
+    $('#rotate-left').hide();
+    $('#rotate-right').hide();
+  }
+}
+
 
 
 createFloor()
